@@ -1,0 +1,13 @@
+{
+	"autodeskProduct":	"Fusion360",
+	"type":	"addin",
+	"id":	"4f847085-09c4-408a-a8b5-750412f125f0",
+	"author":	"David Preiss",
+	"description":	{
+		"":	"An Add-In to post process directly to the FabMo digital fabrication platform\t"
+	},
+	"version":	"0",
+	"runOnStartup":	false,
+	"supportedOS":	"windows|mac",
+	"editEnabled":	true
+}
