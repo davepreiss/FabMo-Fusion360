@@ -1,4 +1,4 @@
-# FabMo-Fusion-360
+# FabMo-Fusion-ThreeSixty
 FabMo Add-In for Fusion360 CAM
 
 # Objective
