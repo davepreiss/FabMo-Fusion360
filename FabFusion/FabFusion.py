@@ -74,19 +74,19 @@ def exportFile(opName, Fab_post, isDebug):
     product = products.itemByProductType('CAMProductType')
     cam = adsk.cam.CAM.cast(product)
 
-    # Iterate through CAM objects for operation, folder or setup
-    # Currently doesn't handle duplicate in names
-    #for setup in cam.setups:
-    #    if setup.name == opName:
-     #       toPost = setup
-      #  else:
-       #     for folder in setup.folders:
-        #        if folder.name == opName:
-         #           toPost = folder       
+     #Iterate through CAM objects for operation, folder or setup
+     #Currently doesn't handle duplicate in names
+    for setup in cam.setups:
+        if setup.name == opName:
+            toPost = setup
+        else:
+            for folder in setup.folders:
+                if folder.name == opName:
+                    toPost = folder
    
     for operation in cam.allOperations:
-        #if operation.name == opName:
-        toPost = operation
+        if operation.name == opName:
+            toPost = operation
             
     # Create a temporary directory for post file
     #outputFolder = tempfile.mkdtemp()
@@ -140,13 +140,16 @@ def exportFile(opName, Fab_post, isDebug):
 
 # Get the current values of the command inputs.
 def getInputs(inputs):
-        
+
+        from .Modules import fabmo    
+        tools = fabmo.find_tools(False)
+
         # Look up name of input and get value
         Fab_post = inputs.itemById('Fab_post').text
         saveSettings = inputs.itemById('saveSettings').value
         showOperationsInput = inputs.itemById('showOperations')
         showOperations = showOperationsInput.selectedItem.name
-        
+
         # Only attempt to get a value if the user has made a selection
         setupInput = inputs.itemById('setups')
         setupItem = setupInput.selectedItem
@@ -172,7 +175,7 @@ def getInputs(inputs):
         elif (showOperations == 'Operations'):
             opName = operationName
 
-        return (opName, Fab_post, saveSettings, showOperations)
+        return (opName, Fab_post, saveSettings, showOperations, tools)
 
 # Will update visibility of 3 selection dropdowns based on radio selection
 # Also updates radio selection which is only really useful when command is first launched.
@@ -213,7 +216,7 @@ class FabExecutedEventHandler(adsk.core.CommandEventHandler):
         try:
             # Get the inputs.
             inputs = args.command.commandInputs
-            (opName, Fab_post, saveSettings, showOperations) = getInputs(inputs)
+            (opName, Fab_post, saveSettings, showOperations, tools) = getInputs(inputs)
             
             # Save Settings:
             if saveSettings:
@@ -298,7 +301,7 @@ class FabCreatedEventHandler(adsk.core.CommandCreatedEventHandler):
             # What to select from?  Setups, Folders, Operations?
             showOperations_input = inputs.addButtonRowCommandInput("showOperations", 'What to Post?', False)  
             showOperations_input.listItems.add("Setups", False, './/Setups')
-            showOperations_input.listItems.add("Operations", False, './/Operations')
+            showOperations_input.listItems.add("Operations", True, './/Operations')
             showOperations_input.listItems.add("Folders", False, './/Folders')
 
             # Drop down for Setups
@@ -315,7 +318,11 @@ class FabCreatedEventHandler(adsk.core.CommandCreatedEventHandler):
                     folderDropDown.listItems.add(folder.name, False)         
             for operation in cam.allOperations:
                 opDropDown.listItems.add(operation.name, False)
-                
+
+            # Drop down for available tools
+            toolDropDown = inputs.addDropDownCommandInput('tools', 'Select Tool:', adsk.core.DropDownStyles.LabeledIconDropDownStyle)
+            # toolDropDown.listItems.add(tool.name, False)
+
             # Option for debuging mode from StoolDesign    
             debugInput = inputs.addBoolValueInput('debugInput', 'Debug Mode', True, '', False)
 
